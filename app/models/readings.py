@@ -21,19 +21,6 @@ class ReadingType(Enum):
     HQ = "HQ"
 
 
-class Rating(Enum):
-    ONE_STAR = 1
-    TWO_STARS = 2
-    THREE_STARS = 3
-    FOUR_STARS = 4
-    FIVE_STARS = 5
-    SIX_STARS = 6
-    SEVEN_STARS = 7
-    EIGHT_STARS = 8
-    NINE_STARS = 9
-    TEN_STARS = 10
-
-
 class Reading:
     def __init__(
         self,
@@ -41,7 +28,7 @@ class Reading:
         authors: List[str],
         type: ReadingType,
         status: ReadingStatus,
-        rating: Optional[Rating] = None,
+        rating: Optional[int] = None,
     ):
         self.id: Optional[int] = None
         self.title: str = title
@@ -51,14 +38,14 @@ class Reading:
         self.status: ReadingStatus = status
         self.current_page: Optional[int] = None
         self.total_pages: Optional[int] = None
-        self.rating: Optional[Rating] = rating
+        self.rating: Optional[int] = rating
         self.notes: Optional[str] = None
         self.description: Optional[str] = None
         self.cover_image_path: Optional[Path] = None
         self.genres: List[str] = []
 
-    def create_table(self, conn: create_connection):
-        cursor = create_connection().cursor()
+    def create_table(self, conn: create_connection()):
+        cursor = conn.cursor()
         cursor.execute(
             """
             CREATE TABLE IF NOT EXISTS readings (
@@ -80,8 +67,8 @@ class Reading:
         )
         conn.commit()
 
-    def save(self, conn: create_connection):
-        cursor = create_connection().cursor()
+    def save(self, conn: sqlite3.Connection):
+        cursor = conn.cursor()
         cursor.execute(
             """
             INSERT INTO readings (title, authors, type, published_date, status, current_page, total_pages, rating, notes, description, cover_image_path, genres)
@@ -95,7 +82,7 @@ class Reading:
                 self.status.value,
                 self.current_page,
                 self.total_pages,
-                self.rating.value if self.rating else None,
+                self.rating,
                 self.notes,
                 self.description,
                 str(self.cover_image_path) if self.cover_image_path else None,
@@ -104,10 +91,10 @@ class Reading:
         )
         conn.commit()
 
-    def update(self, conn: create_connection):
+    def update(self, conn: sqlite3.Connection):
         if self.id is None:
             raise ValueError("Reading must have an ID to be updated.")
-        cursor = create_connection().cursor()
+        cursor = conn.cursor()
         cursor.execute(
             """
             UPDATE readings
@@ -122,7 +109,7 @@ class Reading:
                 self.status.value,
                 self.current_page,
                 self.total_pages,
-                self.rating.value if self.rating else None,
+                self.rating,
                 self.notes,
                 self.description,
                 str(self.cover_image_path) if self.cover_image_path else None,
@@ -133,15 +120,15 @@ class Reading:
         conn.commit()    
 
 
-    def delete(self, conn: create_connection):
+    def delete(self, conn: sqlite3.Connection):
         if self.id is None:
             raise ValueError("Reading must have an ID to be deleted.")
-        cursor = create_connection().cursor()
+        cursor = conn.cursor()
         cursor.execute("DELETE FROM readings WHERE id = ?", (self.id,))
         conn.commit()    
 
-    def listar_leitura(self, conn: create_connection) -> List['Reading']:
-        cursor = create_connection().cursor()
+    def listar_leitura(self, conn: sqlite3.Connection) -> List['Reading']:
+        cursor = conn.cursor()
         cursor.execute("SELECT * FROM readings")
         rows = cursor.fetchall()
         leituras = []
@@ -151,16 +138,16 @@ class Reading:
                 authors=row[2].split(", "),
                 type=ReadingType(row[3]),
                 status=ReadingStatus(row[5]),
-                rating=Rating(row[7]) if row[7] is not None else None,
+                rating=int(row[8]) if row[8] is not None else None,
             )
             leitura.id = row[0]
             leitura.published_date = datetime.strptime(row[4], "%Y-%m-%d") if row[4] else None
             leitura.current_page = row[6]
             leitura.total_pages = row[7]
-            leitura.notes = row[8]
-            leitura.description = row[9]
-            leitura.cover_image_path = Path(row[10]) if row[10] else None
-            leitura.genres = row[11].split(", ") if row[11] else []
+            leitura.notes = row[9]
+            leitura.description = row[10]
+            leitura.cover_image_path = Path(row[11]) if row[11] else None
+            leitura.genres = row[12].split(", ") if row[12] else []
             leituras.append(leitura)
         return leituras
 
