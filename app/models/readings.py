@@ -29,22 +29,29 @@ class Reading:
         type: ReadingType,
         status: ReadingStatus,
         rating: Optional[int] = None,
+        current_page: Optional[int] = None,
+        total_pages: Optional[int] = None,
+        published_date: Optional[datetime] = None,
+        notes: Optional[str] = None,
+        description: Optional[str] = None,
+        cover_image_path: Optional[Path] = None,
+        genres: Optional[List[str]] = None,
     ):
         self.id: Optional[int] = None
         self.title: str = title
         self.authors: List[str] = authors
         self.type: ReadingType = type
-        self.published_date: Optional[datetime] = None
+        self.published_date: Optional[datetime] = published_date
         self.status: ReadingStatus = status
-        self.current_page: Optional[int] = None
-        self.total_pages: Optional[int] = None
+        self.current_page: Optional[int] = current_page
+        self.total_pages: Optional[int] = total_pages
         self.rating: Optional[int] = rating
-        self.notes: Optional[str] = None
-        self.description: Optional[str] = None
-        self.cover_image_path: Optional[Path] = None
-        self.genres: List[str] = []
+        self.notes: Optional[str] = notes
+        self.description: Optional[str] = description
+        self.cover_image_path: Optional[Path] = cover_image_path
+        self.genres: List[str] = genres or []
 
-    def create_table(self, conn: create_connection()):
+    def create_table(self, conn: sqlite3.Connection):
         cursor = conn.cursor()
         cursor.execute(
             """
@@ -91,7 +98,7 @@ class Reading:
         )
         conn.commit()
 
-    def update(self, conn: sqlite3.Connection):
+    def update(self,id, conn: sqlite3.Connection):
         if self.id is None:
             raise ValueError("Reading must have an ID to be updated.")
         cursor = conn.cursor()
@@ -105,7 +112,7 @@ class Reading:
                 self.title,
                 ", ".join(self.authors),
                 self.type.value,
-                self.published_date,
+                self.published_date.strftime("%Y%m%d") if self.self.published_date else None,
                 self.status.value,
                 self.current_page,
                 self.total_pages,
@@ -117,17 +124,17 @@ class Reading:
                 self.id,
             ),
         )
-        conn.commit()    
-
+        conn.commit()
 
     def delete(self, conn: sqlite3.Connection):
         if self.id is None:
             raise ValueError("Reading must have an ID to be deleted.")
         cursor = conn.cursor()
         cursor.execute("DELETE FROM readings WHERE id = ?", (self.id,))
-        conn.commit()    
+        conn.commit()
 
-    def listar_leitura(self, conn: sqlite3.Connection) -> List['Reading']:
+    @classmethod
+    def listar_leitura(cls, conn: sqlite3.Connection) -> List["Reading"]:
         cursor = conn.cursor()
         cursor.execute("SELECT * FROM readings")
         rows = cursor.fetchall()
@@ -141,7 +148,9 @@ class Reading:
                 rating=int(row[8]) if row[8] is not None else None,
             )
             leitura.id = row[0]
-            leitura.published_date = datetime.strptime(row[4], "%Y-%m-%d") if row[4] else None
+            leitura.published_date = (
+                datetime.strptime(row[4], "%Y-%m-%d") if row[4] else None
+            )
             leitura.current_page = row[6]
             leitura.total_pages = row[7]
             leitura.notes = row[9]
@@ -152,4 +161,26 @@ class Reading:
         return leituras
 
     def __str__(self):
-        return f"{self.title} by {', '.join(self.authors)} - {self.type.value} [{self.status.value}]"    
+        return f"{self.title} by {', '.join(self.authors)} - {self.type.value} [{self.status.value}]"
+
+
+
+'''if __name__ == "__main__":
+    conn = create_connection()
+    leitura = Reading(
+        title="The Great Gatsby",
+        authors=["F. Scott Fitzgerald"],
+        type=ReadingType.BOOK,
+        status=ReadingStatus.TO_READ,
+        rating=5,
+        published_date=datetime(1925, 4, 10),
+        notes="A classic novel set in the Jazz Age.",
+        description="The story of the mysteriously wealthy Jay Gatsby and his love for the beautiful Daisy Buchanan.",
+        cover_image_path=Path("covers/great_gatsby.jpg"),
+        genres=["Classic", "Fiction"],
+    )
+    leitura.create_table(conn)
+    leitura.save(conn)
+    leituras = leitura.listar_leitura(conn)
+    for l in leituras:
+        print(l)'''
