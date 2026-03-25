@@ -87,13 +87,35 @@ class ReadingService:
 
         leituras_id.id = id
 
-        with create_connection()
-        
+        try:
+            with create_connection(self.path_db) as conn:
+                leituras_id.update(id, conn)
+        except Exception as e:
+            print(f"Erro: {e}")
+
+
+    def deletar(self, id: int):
+        try:
+            with create_connection(self.path_db) as conn:
+                leitura = Reading(
+                    title="",
+                    authors=[],
+                    type=ReadingType.BOOK,
+                    status=ReadingStatus.TO_READ,
+                )
+                leitura.id = id
+                leitura.delete(conn)
+        except Exception as e:
+            print(f"Erro: {e}")   
+
+
+
+
 
 r = ReadingService()
 
 r.adicionar_leitura(
-    title="Kagurabachi Vol. 1",
+    title="Kagurabachi Vol. 2",
     authors=["Takeru Hokazono"],
     type=ReadingType.MANGA,
     status=ReadingStatus.READING,
@@ -101,10 +123,12 @@ r.adicionar_leitura(
     current_page=20,
     total_pages=192,
     notes="Comecei hoje, arte muito boa",
+    cover_image_path=Path("covers/great_gatsby.jpg"),
     genres=["Ação", "Sobrenatural"]
 )  
 
 r.listar_leitura()
+
 
 
 

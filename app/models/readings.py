@@ -5,6 +5,7 @@ from pathlib import Path
 from enum import Enum
 from pathlib import Path
 from app.database.conetion import create_connection
+from app.utils.handle_cover_image import handle_cover_image
 
 
 class ReadingStatus(Enum):
@@ -92,7 +93,7 @@ class Reading:
                 self.rating,
                 self.notes,
                 self.description,
-                str(self.cover_image_path) if self.cover_image_path else None,
+                handle_cover_image(self.cover_image_path),
                 ", ".join(self.genres),
             ),
         )
@@ -119,7 +120,7 @@ class Reading:
                 self.rating,
                 self.notes,
                 self.description,
-                str(self.cover_image_path) if self.cover_image_path else None,
+                handle_cover_image(self.cover_image_path),
                 ", ".join(self.genres),
                 self.id,
             ),
