@@ -3,6 +3,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import List, Optional
 from app.database.conetion import create_connection
+from app.utils.handle_cover_image import handle_cover_image
 
 
 class ReadingService:
@@ -112,7 +113,7 @@ class ReadingService:
 
 
 
-r = ReadingService()
+'''r = ReadingService()
 
 r.adicionar_leitura(
     title="Kagurabachi Vol. 2",
@@ -127,7 +128,7 @@ r.adicionar_leitura(
     genres=["Ação", "Sobrenatural"]
 )  
 
-r.listar_leitura()
+r.listar_leitura()'''
 
 
 

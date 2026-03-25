@@ -99,7 +99,7 @@ class Reading:
         )
         conn.commit()
 
-    def update(self,id, conn: sqlite3.Connection):
+    def update(self, id, conn: sqlite3.Connection):
         if self.id is None:
             raise ValueError("Reading must have an ID to be updated.")
         cursor = conn.cursor()
@@ -113,7 +113,11 @@ class Reading:
                 self.title,
                 ", ".join(self.authors),
                 self.type.value,
-                self.published_date.strftime("%Y%m%d") if self.self.published_date else None,
+                (
+                    self.published_date.strftime("%Y%m%d")
+                    if self.self.published_date
+                    else None
+                ),
                 self.status.value,
                 self.current_page,
                 self.total_pages,
@@ -161,12 +165,36 @@ class Reading:
             leituras.append(leitura)
         return leituras
 
+    def buscar_leitura(cls, conn: sqlite3.Connection, id: int) -> Optional["Reading"]:
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM readings WHERE id = ?", (id,))
+        row = cursor.fetchone()
+        if row:
+            leitura = Reading(
+                title=row[1],
+                authors=row[2].split(", "),
+                type=ReadingType(row[3]),
+                status=ReadingStatus(row[5]),
+                rating=int(row[8]) if row[8] is not None else None,
+            )
+            leitura.id = row[0]
+            leitura.published_date = (
+                datetime.strptime(row[4], "%Y-%m-%d") if row[4] else None
+            )
+            leitura.current_page = row[6]
+            leitura.total_pages = row[7]
+            leitura.notes = row[9]
+            leitura.description = row[10]
+            leitura.cover_image_path = Path(row[11]) if row[11] else None
+            leitura.genres = row[12].split(", ") if row[12] else []
+            return leitura
+        return None
+
     def __str__(self):
-        return f"{self.title} by {', '.join(self.authors)} - {self.type.value} [{self.status.value}]"
+        return f"{self.title} by {', '.join(self.authors)} - {self.type.value} [{self.status.value} - {self.rating}/5 - {self.current_page}/{self.total_pages} pages] - Published on {self.published_date.strftime('%Y-%m-%d') if self.published_date else 'N/A'} - Genres: {', '.join(self.genres)}"
 
 
-
-'''if __name__ == "__main__":
+"""if __name__ == "__main__":
     conn = create_connection()
     leitura = Reading(
         title="The Great Gatsby",
@@ -184,4 +212,4 @@ class Reading:
     leitura.save(conn)
     leituras = leitura.listar_leitura(conn)
     for l in leituras:
-        print(l)'''
+        print(l)"""
