@@ -102,8 +102,17 @@ def listar():
     for l in leituras:
         print(f"\nID: {l.id}")
         print(f"Título: {l.title}")
+        print(f"Autores: {', '.join(l.authors)}")
+        print(f"Tipo: {l.type.value}")
         print(f"Status: {l.status.value}")
-        print(f"Nota: {l.rating}")
+        print(f"Rating: {l.rating if l.rating is not None else 'N/A'}")
+        print(f"Página atual: {l.current_page if l.current_page is not None else 'N/A'}")
+        print(f"Total de páginas: {l.total_pages if l.total_pages is not None else 'N/A'}")
+        print(f"Data de publicação: {l.published_date.strftime('%Y-%m-%d') if l.published_date else 'N/A'}")
+        print(f"Notas: {l.notes if l.notes else 'N/A'}")
+        print(f"Descrição: {l.description if l.description else 'N/A'}")
+        print(f"Capa: {l.cover_image_path if l.cover_image_path else 'N/A'}")
+        print(f"Gêneros: {', '.join(l.genres) if l.genres else 'N/A'}")
 
 
 # ------------------------
