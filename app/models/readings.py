@@ -115,7 +115,7 @@ class Reading:
                 self.type.value,
                 (
                     self.published_date.strftime("%Y%m%d")
-                    if self.self.published_date
+                    if self.published_date
                     else None
                 ),
                 self.status.value,

@@ -92,7 +92,7 @@ class ReadingService:
             with create_connection(self.path_db) as conn:
                 leituras_id.update(id, conn)
         except Exception as e:
-            print(f"Erro: {e}")
+            print(f"Erroooo: {e}")
 
 
     def deletar(self, id: int):
@@ -108,6 +108,9 @@ class ReadingService:
                 leitura.delete(conn)
         except Exception as e:
             print(f"Erro: {e}")   
+
+    def excluir_leitura(self, id: int):
+        self.deletar(id)        
 
 
 

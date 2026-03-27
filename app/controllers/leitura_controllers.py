@@ -82,4 +82,4 @@ class LeituraController:
         self.reading_service.excluir_leitura(id)
 
     def buscar_leitura(self, id: int):
-        return self.reading_service.buscar_leitura(id)        
+        return self.reading_service.deletar(id)
